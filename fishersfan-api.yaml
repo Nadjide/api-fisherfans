@@ -1,0 +1,931 @@
+openapi: 3.1.1
+info:
+  title: FisherFans API
+  description: >
+    REST API to manage users, boats, reservations, fishing trips, and fishing logbooks
+    for the FisherFans application.
+  version: 1.0.0
+
+servers:
+  - url: https://api.fisherfans.io
+    description: Production server
+  - url: https://staging.fisherfans.io
+    description: Staging server
+
+tags:
+  - name: Users
+    description: User management
+  - name: Boats
+    description: Boat management
+  - name: Reservations
+    description: Reservation management
+  - name: Logbooks
+    description: Logbook and logbook pages management
+  - name: Trips
+    description: Sea trips management
+
+paths:
+  /v1/users:
+    get:
+      tags: [Users]
+      summary: List all users
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+
+    post:
+      tags: [Users]
+      summary: Create a new user
+      requestBody:
+        $ref: '#/components/requestBodies/UserBody'
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /v1/users/{id}:
+    get:
+      tags: [Users]
+      summary: Get a user by ID
+      parameters:
+        - $ref: '#/components/parameters/idPath'
+      responses:
+        '200':
+          description: User details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Users]
+      summary: Delete a user
+      parameters:
+        - $ref: '#/components/parameters/idPath'
+      responses:
+        '204':
+          description: User successfully deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /v1/boats:
+    get:
+      tags: [Boats]
+      summary: List all boats
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/userIdQuery'
+      responses:
+        '200':
+          description: List of boats
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Boat'
+
+    post:
+      tags: [Boats]
+      summary: Add a new boat
+      requestBody:
+        $ref: '#/components/requestBodies/BoatBody'
+      responses:
+        '201':
+          description: Boat added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Boat'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /v1/boats/{id}:
+    get:
+      tags: [Boats]
+      summary: Get a boat by ID
+      parameters:
+        - $ref: '#/components/parameters/idPath'
+      responses:
+        '200':
+          description: Boat details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Boat'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Boats]
+      summary: Update a boat
+      parameters:
+        - $ref: '#/components/parameters/idPath'
+      requestBody:
+        $ref: '#/components/requestBodies/BoatBody'
+      responses:
+        '200':
+          description: Boat updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Boat'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+    delete:
+      tags: [Boats]
+      summary: Delete a boat
+      parameters:
+        - $ref: '#/components/parameters/idPath'
+      responses:
+        '204':
+          description: Boat deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /v1/reservations:
+    get:
+      tags: [Reservations]
+      summary: List all reservations
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/userIdQuery'
+        - $ref: '#/components/parameters/tripIdQuery'
+      responses:
+        '200':
+          description: List of reservations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Reservation'
+
+    post:
+      tags: [Reservations]
+      summary: Create a reservation
+      requestBody:
+        $ref: '#/components/requestBodies/ReservationBody'
+      responses:
+        '201':
+          description: Reservation created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /v1/reservations/{id}:
+    get:
+      tags: [Reservations]
+      summary: Get a reservation by ID
+      parameters:
+        - $ref: '#/components/parameters/idPath'
+      responses:
+        '200':
+          description: Reservation details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Reservations]
+      summary: Delete a reservation
+      parameters:
+        - $ref: '#/components/parameters/idPath'
+      responses:
+        '204':
+          description: Reservation deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /v1/trips:
+    get:
+      tags: [Trips]
+      summary: List all trips
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/boatIdQuery'
+        - $ref: '#/components/parameters/startDateQuery'
+        - $ref: '#/components/parameters/endDateQuery'
+      responses:
+        '200':
+          description: List of trips
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Trip'
+
+    post:
+      tags: [Trips]
+      summary: Create a trip
+      requestBody:
+        $ref: '#/components/requestBodies/TripBody'
+      responses:
+        '201':
+          description: Trip created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trip'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /v1/trips/{id}:
+    get:
+      tags: [Trips]
+      summary: Get a trip by ID
+      parameters:
+        - $ref: '#/components/parameters/idPath'
+      responses:
+        '200':
+          description: Trip details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trip'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Trips]
+      summary: Update a trip
+      parameters:
+        - $ref: '#/components/parameters/idPath'
+      requestBody:
+        $ref: '#/components/requestBodies/TripBody'
+      responses:
+        '200':
+          description: Trip updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trip'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+    delete:
+      tags: [Trips]
+      summary: Delete a trip
+      parameters:
+        - $ref: '#/components/parameters/idPath'
+      responses:
+        '204':
+          description: Trip deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /v1/logbooks:
+    get:
+      tags: [Logbooks]
+      summary: List all logbooks
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/userIdQuery'
+      responses:
+        '200':
+          description: List of logbooks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Logbook'
+
+    post:
+      tags: [Logbooks]
+      summary: Create a logbook
+      requestBody:
+        $ref: '#/components/requestBodies/LogbookBody'
+      responses:
+        '201':
+          description: Logbook created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Logbook'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /v1/logbooks/{id}:
+    get:
+      tags: [Logbooks]
+      summary: Get a logbook by ID
+      parameters:
+        - $ref: '#/components/parameters/idPath'
+      responses:
+        '200':
+          description: Logbook details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Logbook'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Logbooks]
+      summary: Delete a logbook
+      parameters:
+        - $ref: '#/components/parameters/idPath'
+      responses:
+        '204':
+          description: Logbook deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /v1/logbooks/{logbookId}/pages:
+    get:
+      tags: [Logbooks]
+      summary: List pages of a logbook
+      parameters:
+        - $ref: '#/components/parameters/logbookIdPath'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+      responses:
+        '200':
+          description: List of logbook pages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LogbookPage'
+
+    post:
+      tags: [Logbooks]
+      summary: Add a page to a logbook
+      parameters:
+        - $ref: '#/components/parameters/logbookIdPath'
+      requestBody:
+        $ref: '#/components/requestBodies/LogbookPageBody'
+      responses:
+        '201':
+          description: Logbook page created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogbookPage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /v1/logbooks/{logbookId}/pages/{pageId}:
+    get:
+      tags: [Logbooks]
+      summary: Get a logbook page
+      parameters:
+        - $ref: '#/components/parameters/logbookIdPath'
+        - $ref: '#/components/parameters/pageIdPath'
+      responses:
+        '200':
+          description: Logbook page details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogbookPage'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Logbooks]
+      summary: Update a logbook page
+      parameters:
+        - $ref: '#/components/parameters/logbookIdPath'
+        - $ref: '#/components/parameters/pageIdPath'
+      requestBody:
+        $ref: '#/components/requestBodies/LogbookPageBody'
+      responses:
+        '200':
+          description: Logbook page updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogbookPage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+    delete:
+      tags: [Logbooks]
+      summary: Delete a logbook page
+      parameters:
+        - $ref: '#/components/parameters/logbookIdPath'
+        - $ref: '#/components/parameters/pageIdPath'
+      responses:
+        '204':
+          description: Page deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /v1/logbooks/users/{userId}/pages:
+    get:
+      tags: [Logbooks]
+      summary: List all logbook pages for a user
+      parameters:
+        - $ref: '#/components/parameters/userIdPath'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+      responses:
+        '200':
+          description: List of logbook pages for the user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LogbookPage'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  parameters:
+    idPath:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+      description: Unique resource identifier
+    logbookIdPath:
+      name: logbookId
+      in: path
+      required: true
+      schema:
+        type: integer
+      description: Logbook identifier
+    pageIdPath:
+      name: pageId
+      in: path
+      required: true
+      schema:
+        type: integer
+      description: Logbook page identifier
+
+    userIdPath:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: integer
+      description: User identifier
+
+    limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+      description: Maximum number of items to return
+
+    offset:
+      name: offset
+      in: query
+      schema:
+        type: integer
+        minimum: 0
+      description: Pagination start index
+
+    userIdQuery:
+      name: userId
+      in: query
+      schema:
+        type: integer
+      description: Filter by user identifier
+
+    boatIdQuery:
+      name: boatId
+      in: query
+      schema:
+        type: integer
+      description: Filter by boat identifier
+
+    tripIdQuery:
+      name: tripId
+      in: query
+      schema:
+        type: integer
+      description: Filter by trip identifier
+
+    startDateQuery:
+      name: startDate
+      in: query
+      schema:
+        type: string
+        format: date
+      description: Start date filter (inclusive)
+
+    endDateQuery:
+      name: endDate
+      in: query
+      schema:
+        type: string
+        format: date
+      description: End date filter (inclusive)
+
+  requestBodies:
+    UserBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/User'
+
+    BoatBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Boat'
+
+    ReservationBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Reservation'
+
+    TripBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Trip'
+
+    LogbookBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Logbook'
+
+    LogbookPageBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LogbookPage'
+
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Conflict:
+      description: Business conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BusinessError'
+    UnprocessableEntity:
+      description: Business validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BusinessError'
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        firstName:
+          type: string
+        lastName:
+          type: string
+        birthDate:
+          type: string
+          format: date
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        address:
+          type: string
+        postalCode:
+          type: string
+        city:
+          type: string
+        avatarUrl:
+          type: string
+          format: uri
+        languages:
+          type: array
+          items:
+            type: string
+        boatLicense:
+          type: string
+        insuranceNumber:
+          type: string
+        status:
+          $ref: '#/components/schemas/UserStatus'
+        activityType:
+          $ref: '#/components/schemas/ActivityType'
+        company:
+          type: string
+        siret:
+          type:
+            - string
+            - 'null'
+        rc:
+          type:
+            - string
+            - 'null'
+      required: [firstName, lastName, email]
+
+    Boat:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        brand:
+          type: string
+        yearBuilt:
+          type: integer
+        photoUrl:
+          type: string
+          format: uri
+        requiredLicense:
+          $ref: '#/components/schemas/RequiredLicense'
+        boatType:
+          $ref: '#/components/schemas/BoatType'
+        equipment:
+          type: array
+          items:
+            type: string
+        depositEUR:
+          type: number
+          format: float
+        maxCapacity:
+          type: integer
+        berths:
+          type: integer
+        homePort:
+          type: string
+        latitude:
+          type: number
+          format: float
+          minimum: -90
+          maximum: 90
+          description: Latitude in decimal degrees (-90 to 90)
+        longitude:
+          type: number
+          format: float
+          minimum: -180
+          maximum: 180
+          description: Longitude in decimal degrees (-180 to 180)
+        propulsion:
+          $ref: '#/components/schemas/Propulsion'
+        enginePowerHP:
+          type: integer
+        ownerId:
+          type: integer
+      required: [name, boatType]
+
+    Reservation:
+      type: object
+      properties:
+        id:
+          type: integer
+        reservedDate:
+          type: string
+          format: date
+        seats:
+          type: integer
+        totalPrice:
+          type: number
+          format: float
+        userId:
+          type: integer
+        tripId:
+          type: integer
+      required: [reservedDate, seats]
+
+    Trip:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        tripType:
+          $ref: '#/components/schemas/TripType'
+        pricingType:
+          $ref: '#/components/schemas/PricingType'
+        startDates:
+          type: array
+          items:
+            type: string
+            format: date
+        endDates:
+          type: array
+          items:
+            type: string
+            format: date
+        startTimes:
+          type: array
+          items:
+            type: string
+            format: time
+        endTimes:
+          type: array
+          items:
+            type: string
+            format: time
+        passengerCount:
+          type: integer
+        price:
+          type: number
+          format: float
+        boatId:
+          type: integer
+      required: [tripType, pricingType, boatId]
+
+    Logbook:
+      type: object
+      properties:
+        id:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        title:
+          type: string
+        authorId:
+          type: integer
+      required: [createdAt, title, authorId]
+
+    LogbookPage:
+      type: object
+      properties:
+        id:
+          type: integer
+        fishName:
+          type: string
+        photoUrl:
+          type: string
+          format: uri
+        comment:
+          type: string
+        lengthCm:
+          type: integer
+        weightKg:
+          type: number
+          format: float
+        fishingLocation:
+          type: string
+        fishingDate:
+          type: string
+          format: date
+        released:
+          type: boolean
+        logbookId:
+          type: integer
+      required: [fishName, fishingDate, logbookId]
+
+    UserStatus:
+      type: string
+      enum: [individual, professional]
+
+    ActivityType:
+      type: string
+      enum: [rental, guide]
+
+    RequiredLicense:
+      type: string
+      enum: [coastal, inland]
+
+    BoatType:
+      type: string
+      enum: [open, cabin, catamaran, sailboat, jetski, canoe]
+
+    Propulsion:
+      type: string
+      enum: [diesel, gasoline, none]
+
+    TripType:
+      type: string
+      enum: [daily, recurring]
+
+    PricingType:
+      type: string
+      enum: [flat, per_person]
+
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+      required: [code, message]
+
+    BusinessError:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Business error code (e.g., OVERBOOKED, DUPLICATE_EMAIL)
+        message:
+          type: string
+          description: Human-readable explanation of the business error
+        context:
+          type: object
+          additionalProperties: true
+          description: Optional key-value context for the error
+      required: [code, message]
