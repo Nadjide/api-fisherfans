@@ -2,14 +2,20 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlmodel import Session, select
 from app.database import get_session
+from app.auth import get_current_user
+from app.models.user import User
 from app.models.trip import Trip, TripCreate, TripRead, TripUpdate
 from app.models.boat import Boat
 import datetime
 
-router = APIRouter(prefix="/v1/trips", tags=["Trips"])
+router = APIRouter(prefix="/trips", tags=["Trips"])
 
 @router.post("/", response_model=TripRead, status_code=status.HTTP_201_CREATED)
-def create_trip(trip: TripCreate, session: Session = Depends(get_session)):
+def create_trip(
+    trip: TripCreate, 
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
     # Validate boat exists
     boat = session.get(Boat, trip.boatId)
     if not boat:
@@ -28,7 +34,8 @@ def read_trips(
     boatId: Optional[int] = None,
     startDate: Optional[datetime.date] = None,
     endDate: Optional[datetime.date] = None,
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
 ):
     query = select(Trip).offset(offset).limit(limit)
     if boatId:
@@ -77,14 +84,23 @@ def read_trips(
     return trips
 
 @router.get("/{trip_id}", response_model=TripRead)
-def read_trip(trip_id: int, session: Session = Depends(get_session)):
+def read_trip(
+    trip_id: int, 
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
     trip = session.get(Trip, trip_id)
     if not trip:
         raise HTTPException(status_code=404, detail="Trip not found")
     return trip
 
 @router.put("/{trip_id}", response_model=TripRead)
-def update_trip(trip_id: int, trip_update: TripUpdate, session: Session = Depends(get_session)):
+def update_trip(
+    trip_id: int, 
+    trip_update: TripUpdate, 
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
     db_trip = session.get(Trip, trip_id)
     if not db_trip:
         raise HTTPException(status_code=404, detail="Trip not found")
@@ -98,7 +114,11 @@ def update_trip(trip_id: int, trip_update: TripUpdate, session: Session = Depend
     return db_trip
 
 @router.delete("/{trip_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_trip(trip_id: int, session: Session = Depends(get_session)):
+def delete_trip(
+    trip_id: int, 
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
     trip = session.get(Trip, trip_id)
     if not trip:
         raise HTTPException(status_code=404, detail="Trip not found")

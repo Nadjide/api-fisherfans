@@ -17,9 +17,9 @@ class TripBase(SQLModel):
     description: Optional[str] = None
     tripType: TripType
     pricingType: PricingType
-    startDates: List[datetime.date] = Field(default=[], sa_column=Column(JSON))
-    endDates: List[datetime.date] = Field(default=[], sa_column=Column(JSON))
-    startTimes: List[datetime.time] = Field(default=[], sa_column=Column(JSON)) # Using string for time based on YAML which says format: time, but python time object is better if serialized correctly. Actually SQLModel/Pydantic can handle time. 
+    startDates: List[str] = Field(default=[], sa_column=Column(JSON))
+    endDates: List[str] = Field(default=[], sa_column=Column(JSON))
+    startTimes: List[str] = Field(default=[], sa_column=Column(JSON))
     # YAML says items: string, format: time. 
     # Let's use List[str] for simplicity in SQLite + JSON, but better to use List[datetime.time] and let Pydantic handle it if possible. 
     # Only standard JSON types are supported in SQLite JSON column usually.
@@ -35,7 +35,7 @@ class TripBase(SQLModel):
     
     # Let's go with List[str] to correspond to "format: date" (ISO strings) in YAML.
     
-    endTimes: List[datetime.time] = Field(default=[], sa_column=Column(JSON))
+    endTimes: List[str] = Field(default=[], sa_column=Column(JSON))
     passengerCount: Optional[int] = None
     price: Optional[float] = None
     boatId: int = Field(foreign_key="boat.id")
@@ -58,10 +58,10 @@ class TripUpdate(SQLModel):
     description: Optional[str] = None
     tripType: Optional[TripType] = None
     pricingType: Optional[PricingType] = None
-    startDates: Optional[List[datetime.date]] = None
-    endDates: Optional[List[datetime.date]] = None
-    startTimes: Optional[List[datetime.time]] = None
-    endTimes: Optional[List[datetime.time]] = None
+    startDates: Optional[List[str]] = None
+    endDates: Optional[List[str]] = None
+    startTimes: Optional[List[str]] = None
+    endTimes: Optional[List[str]] = None
     passengerCount: Optional[int] = None
     price: Optional[float] = None
     boatId: Optional[int] = None
