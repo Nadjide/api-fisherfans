@@ -4,3 +4,6 @@ sqlmodel
 pydantic-settings
 pytest
 httpx
+python-jose[cryptography]
+bcrypt
+python-multipart

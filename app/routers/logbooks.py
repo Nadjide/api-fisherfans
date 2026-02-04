@@ -2,18 +2,23 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlmodel import Session, select
 from app.database import get_session
+from app.auth import get_current_user
+from app.models.user import User
 from app.models.logbook import (
     Logbook, LogbookCreate, LogbookRead,
     LogbookPage, LogbookPageCreate, LogbookPageRead, LogbookPageUpdate
 )
-from app.models.user import User
 
-router = APIRouter(prefix="/v1/logbooks", tags=["Logbooks"])
+router = APIRouter(prefix="/logbooks", tags=["Logbooks"])
 
 # --- Logbooks ---
 
 @router.post("/", response_model=LogbookRead, status_code=status.HTTP_201_CREATED)
-def create_logbook(logbook: LogbookCreate, session: Session = Depends(get_session)):
+def create_logbook(
+    logbook: LogbookCreate, 
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
     user = session.get(User, logbook.authorId)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -29,7 +34,8 @@ def read_logbooks(
     offset: int = 0,
     limit: int = Query(default=100, le=100),
     userId: Optional[int] = None,
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
 ):
     query = select(Logbook).offset(offset).limit(limit)
     if userId:
@@ -38,14 +44,22 @@ def read_logbooks(
     return logbooks
 
 @router.get("/{logbook_id}", response_model=LogbookRead)
-def read_logbook(logbook_id: int, session: Session = Depends(get_session)):
+def read_logbook(
+    logbook_id: int, 
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
     logbook = session.get(Logbook, logbook_id)
     if not logbook:
         raise HTTPException(status_code=404, detail="Logbook not found")
     return logbook
 
 @router.delete("/{logbook_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_logbook(logbook_id: int, session: Session = Depends(get_session)):
+def delete_logbook(
+    logbook_id: int, 
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
     logbook = session.get(Logbook, logbook_id)
     if not logbook:
         raise HTTPException(status_code=404, detail="Logbook not found")
@@ -59,7 +73,8 @@ def read_logbook_pages(
     logbook_id: int,
     offset: int = 0,
     limit: int = Query(default=100, le=100),
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
 ):
     logbook = session.get(Logbook, logbook_id)
     if not logbook:
@@ -73,7 +88,8 @@ def read_logbook_pages(
 def create_logbook_page(
     logbook_id: int, 
     page: LogbookPageCreate, 
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
 ):
     # Ensure logbook exists and matches path
     logbook = session.get(Logbook, logbook_id)
@@ -93,7 +109,8 @@ def create_logbook_page(
 def read_logbook_page(
     logbook_id: int,
     page_id: int,
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
 ):
     page = session.get(LogbookPage, page_id)
     if not page or page.logbookId != logbook_id:
@@ -105,7 +122,8 @@ def update_logbook_page(
     logbook_id: int,
     page_id: int,
     page_update: LogbookPageUpdate,
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
 ):
     db_page = session.get(LogbookPage, page_id)
     if not db_page or db_page.logbookId != logbook_id:
@@ -123,7 +141,8 @@ def update_logbook_page(
 def delete_logbook_page(
     logbook_id: int,
     page_id: int,
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
 ):
     db_page = session.get(LogbookPage, page_id)
     if not db_page or db_page.logbookId != logbook_id:
@@ -137,7 +156,8 @@ def read_user_logbook_pages(
     user_id: int,
     offset: int = 0,
     limit: int = Query(default=100, le=100),
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
 ):
     # This requires joining Logbook and LogbookPage, or fetching logbooks then pages.
     # SQLModel/SQLAlchemy join:
