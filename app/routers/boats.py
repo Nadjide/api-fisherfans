@@ -5,6 +5,7 @@ from app.database import get_session
 from app.auth import get_current_user
 from app.models.user import User
 from app.models.boat import Boat, BoatCreate, BoatRead, BoatUpdate
+from app.models.user import User
 
 router = APIRouter(prefix="/boats", tags=["Boats"])
 
@@ -14,6 +15,12 @@ def create_boat(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
+    owner = session.get(User, boat.ownerId)
+    if not owner:
+        raise HTTPException(status_code=404, detail="User not found")
+    if not owner.boatLicense:
+        raise HTTPException(status_code=400, detail="Boat license required")
+
     db_boat = Boat.model_validate(boat)
     session.add(db_boat)
     session.commit()
@@ -25,12 +32,30 @@ def read_boats(
     offset: int = 0,
     limit: int = Query(default=100, le=100),
     userId: Optional[int] = None,
+    minLat: Optional[float] = None,
+    maxLat: Optional[float] = None,
+    minLng: Optional[float] = None,
+    maxLng: Optional[float] = None,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
     query = select(Boat).offset(offset).limit(limit)
     if userId:
         query = query.where(Boat.ownerId == userId)
+
+    bbox_params = [minLat, maxLat, minLng, maxLng]
+    if any(param is not None for param in bbox_params):
+        if not all(param is not None for param in bbox_params):
+            raise HTTPException(
+                status_code=400,
+                detail="Bounding box requires minLat, maxLat, minLng, maxLng"
+            )
+        query = query.where(
+            Boat.latitude >= minLat,
+            Boat.latitude <= maxLat,
+            Boat.longitude >= minLng,
+            Boat.longitude <= maxLng,
+        )
     boats = session.exec(query).all()
     return boats
 
