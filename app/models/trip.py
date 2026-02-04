@@ -1,7 +1,7 @@
 from typing import List, Optional
 from enum import Enum
 from sqlmodel import SQLModel, Field, JSON, Column
-from pydantic import validator
+from pydantic import ConfigDict
 import datetime
 
 class TripType(str, Enum):
@@ -41,8 +41,7 @@ class TripBase(SQLModel):
     boatId: int = Field(foreign_key="boat.id")
 
     # We need to manually validate that everything is serialized correctly for SQLite JSON
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
 class Trip(TripBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
