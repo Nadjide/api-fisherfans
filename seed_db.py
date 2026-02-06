@@ -128,7 +128,69 @@ def seed_db():
             for p in pages:
                 session.post(f"{BASE_URL}/logbooks/{l_id}/pages", json=p, headers=h)
 
-    print("✅ Massive Seeding completed!")
+    # --- 6. TEST NEW FEATURES ---
+    print("\n🧪 Testing New Features...")
+
+    # A. Test PUT /users/{id}
+    print("🔄 Testing User Update (BF13)...")
+    update_data = {"phone": "0699999999", "city": "Cap-d'Ail"}
+    r = session.put(f"{BASE_URL}/users/1", json=update_data, headers=nawfel_h)
+    if r.status_code == 200:
+        print(f"✅ User 1 updated: {r.json()['phone']} in {r.json()['city']}")
+
+    # B. Test PUT /reservations/{id}
+    print("🔄 Testing Reservation Update (BF17)...")
+    r_update = {"seats": 3}  # Changing seats from 2 to 3
+    r = session.put(f"{BASE_URL}/reservations/1", json=r_update, headers=alice_h)
+    if r.status_code == 200:
+        print(f"✅ Reservation 1 updated to {r.json()['seats']} seats")
+
+    # C. Test BF26: Trip creation for user without boat
+    print("⛔ Testing BF26 Constraint (No Boat -> No Trip)...")
+    # Alice has no boat
+    bad_trip = {
+        "title": "Illegal Trip", "tripType": "daily", "pricingType": "flat",
+        "startDates": ["2026-09-01"], "endDates": ["2026-09-01"], "startTimes": ["10:00:00"], "endTimes": ["14:00:00"],
+        "passengerCount": 2, "price": 50.0, "boatId": 1
+    }
+    r = session.post(f"{BASE_URL}/trips/", json=bad_trip, headers=alice_h)
+    if r.status_code == 400:
+        print(f"✅ BF26 Blocked creation: {r.json()['detail']}")
+    else:
+        print(f"❌ BF26 FAILED to block creation (Status: {r.status_code})")
+
+    # D. Test BN6: RGPD Anonymization
+    print("🛡️ Testing BN6 Anonymization (RGPD)...")
+    # Delete Bob (User 3)
+    session.delete(f"{BASE_URL}/users/3", headers=bob_h)
+    # Check if Bob's info is anonymized
+    r = session.get(f"{BASE_URL}/users/3", headers=nawfel_h)
+    if r.status_code == 200:
+        u = r.json()
+        if u["firstName"] == "ANONYMIZED" and "@fisherfans.io" in u["email"]:
+            print(f"✅ User 3 correctly anonymized: {u['firstName']} | {u['email']}")
+        else:
+            print(f"❌ User 3 NOT anonymized correctly: {u['firstName']}")
+
+    # E. Test Advanced Filtering
+    print("🔍 Testing Advanced Filtering (BF20-23)...")
+    
+    # Filter boats by brand
+    r = session.get(f"{BASE_URL}/boats/?brand=Boston%20Whaler", headers=nawfel_h)
+    if r.status_code == 200:
+        print(f"✅ Filter Brand (Boston Whaler): Found {len(r.json())} boats")
+
+    # Filter users by city
+    r = session.get(f"{BASE_URL}/users/?city=Nice", headers=nawfel_h)
+    if r.status_code == 200:
+        print(f"✅ Filter City (Nice): Found {len(r.json())} users")
+
+    # Filter trips by type
+    r = session.get(f"{BASE_URL}/trips/?tripType=recurring", headers=nawfel_h)
+    if r.status_code == 200:
+        print(f"✅ Filter Trip Type (recurring): Found {len(r.json())} trips")
+
+    print("\n🏁 Enrichment and Validation finished!")
 
 if __name__ == "__main__":
     seed_db()

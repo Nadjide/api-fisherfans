@@ -17,3 +17,10 @@ class ReservationCreate(ReservationBase):
 
 class ReservationRead(ReservationBase):
     id: int
+
+class ReservationUpdate(SQLModel):
+    reservedDate: Optional[datetime.date] = None
+    seats: Optional[int] = None
+    totalPrice: Optional[float] = None
+    userId: Optional[int] = None
+    tripId: Optional[int] = None

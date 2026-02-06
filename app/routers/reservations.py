@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlmodel import Session, select
 from app.database import get_session
 from app.auth import get_current_user
-from app.models.reservation import Reservation, ReservationCreate, ReservationRead
+from app.models.reservation import Reservation, ReservationCreate, ReservationRead, ReservationUpdate
 from app.models.user import User
 from app.models.trip import Trip
 
@@ -58,6 +58,25 @@ def read_reservation(
     if not reservation:
         raise HTTPException(status_code=404, detail="Reservation not found")
     return reservation
+
+@router.put("/{reservation_id}", response_model=ReservationRead)
+def update_reservation(
+    reservation_id: int, 
+    reservation_update: ReservationUpdate, 
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    db_reservation = session.get(Reservation, reservation_id)
+    if not db_reservation:
+        raise HTTPException(status_code=404, detail="Reservation not found")
+    
+    reservation_data = reservation_update.model_dump(exclude_unset=True)
+    db_reservation.sqlmodel_update(reservation_data)
+    
+    session.add(db_reservation)
+    session.commit()
+    session.refresh(db_reservation)
+    return db_reservation
 
 @router.delete("/{reservation_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_reservation(

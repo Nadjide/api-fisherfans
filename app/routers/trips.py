@@ -4,7 +4,7 @@ from sqlmodel import Session, select
 from app.database import get_session
 from app.auth import get_current_user
 from app.models.user import User
-from app.models.trip import Trip, TripCreate, TripRead, TripUpdate
+from app.models.trip import Trip, TripCreate, TripRead, TripUpdate, TripType, PricingType
 from app.models.boat import Boat
 import datetime
 
@@ -20,6 +20,16 @@ def create_trip(
     boat = session.get(Boat, trip.boatId)
     if not boat:
         raise HTTPException(status_code=404, detail="Boat not found")
+    
+    # BF26: Check if user owns at least one boat
+    # Note: The boat being used for the trip must exist, but the requirement says 
+    # "users not possessing a boat". Usually this means they must own AT LEAST one.
+    user_boats = session.exec(select(Boat).where(Boat.ownerId == current_user.id)).all()
+    if not user_boats:
+        raise HTTPException(
+            status_code=400, 
+            detail="You must own at least one boat to create a fishing trip"
+        )
         
     db_trip = Trip.model_validate(trip)
     session.add(db_trip)
@@ -32,6 +42,8 @@ def read_trips(
     offset: int = 0,
     limit: int = Query(default=100, le=100),
     boatId: Optional[int] = None,
+    tripType: Optional[TripType] = None,
+    pricingType: Optional[PricingType] = None,
     startDate: Optional[datetime.date] = None,
     endDate: Optional[datetime.date] = None,
     session: Session = Depends(get_session),
@@ -40,6 +52,10 @@ def read_trips(
     query = select(Trip).offset(offset).limit(limit)
     if boatId:
         query = query.where(Trip.boatId == boatId)
+    if tripType:
+        query = query.where(Trip.tripType == tripType)
+    if pricingType:
+        query = query.where(Trip.pricingType == pricingType)
     
     # Date filtering is tricky with JSON columns in SQLite without specific extensions or parsing.
     # For now, we will skip complex JSON array filtering in SQL and just return the list or basic filtering.
