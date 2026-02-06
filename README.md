@@ -113,4 +113,4 @@ api-fisherfans/
 ## 👥 Équipe Projet
 
 *   Nadjide OMAR
-*   Nawfel Hilal
+*   Nawfel HILAL
