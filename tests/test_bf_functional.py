@@ -6,6 +6,7 @@ def create_user(client, **overrides):
         "firstName": "Alice",
         "lastName": "Doe",
         "email": "alice@example.com",
+        "password": "secretparamspassword",
     }
     payload.update(overrides)
     response = client.post("/v1/users/", json=payload)
@@ -178,7 +179,12 @@ def test_bf25_business_error_codes(client):
     create_user(client, email="dup@example.com")
     response = client.post(
         "/v1/users/",
-        json={"firstName": "Dup", "lastName": "User", "email": "dup@example.com"},
+        json={
+            "firstName": "Dup",
+            "lastName": "User",
+            "email": "dup@example.com",
+            "password": "pass",
+        },
     )
     assert response.status_code == 409
 

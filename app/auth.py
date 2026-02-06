@@ -7,9 +7,13 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlmodel import Session, select
 from app.database import get_session
 from app.models.user import User
+from dotenv import load_dotenv
+import os
 
 # Configuration (to be moved to env variables later)
-SECRET_KEY = "super-secret-key-fisherfans"
+load_dotenv()
+
+SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
