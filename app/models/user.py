@@ -11,8 +11,8 @@ class ActivityType(str, Enum):
     guide = "guide"
 
 class UserBase(SQLModel):
-    firstName: str
-    lastName: str
+    firstName: Optional[str] = None
+    lastName: Optional[str] = None
     birthDate: Optional[str] = None # Keeping as string for simplicity, could be date
     email: str = Field(index=True, unique=True)
     phone: Optional[str] = None

@@ -1,8 +1,9 @@
+import os
 import requests
 import json
 from datetime import datetime, timedelta
 
-BASE_URL = "http://127.0.0.1:8000/v1"
+BASE_URL = os.getenv("BASE_URL", "http://127.0.0.1:8000/v1")
 
 def seed_db():
     print("🚀 Starting Massive Seeding...")
@@ -185,10 +186,14 @@ def seed_db():
     if r.status_code == 200:
         print(f"✅ Filter City (Nice): Found {len(r.json())} users")
 
-    # Filter trips by type
-    r = session.get(f"{BASE_URL}/trips/?tripType=recurring", headers=nawfel_h)
-    if r.status_code == 200:
-        print(f"✅ Filter Trip Type (recurring): Found {len(r.json())} trips")
+    # F. Test Minimal Registration (Email & Password only)
+    print("🆕 Testing Minimal Registration (BF1/BF2)...")
+    min_user = {"email": "slim@register.com", "password": "password123"}
+    r = session.post(f"{BASE_URL}/auth/register", json=min_user)
+    if r.status_code == 201:
+        print(f"✅ Minimal user registered: {r.json()['email']}")
+    else:
+        print(f"❌ Minimal registration failed: {r.status_code} | {r.text}")
 
     print("\n🏁 Enrichment and Validation finished!")
 
