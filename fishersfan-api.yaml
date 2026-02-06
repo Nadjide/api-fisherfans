@@ -122,6 +122,10 @@ paths:
         - $ref: "#/components/parameters/brandQuery"
         - $ref: "#/components/parameters/boatTypeQuery"
         - $ref: "#/components/parameters/homePortQuery"
+        - $ref: "#/components/parameters/minLat"
+        - $ref: "#/components/parameters/maxLat"
+        - $ref: "#/components/parameters/minLng"
+        - $ref: "#/components/parameters/maxLng"
       responses:
         "200":
           description: List of boats
@@ -699,6 +703,38 @@ components:
         $ref: "#/components/schemas/PricingType"
       description: Filter by pricing type
 
+    minLat:
+      name: minLat
+      in: query
+      schema:
+        type: number
+        format: float
+      description: Minimum latitude for bounding box filter
+
+    maxLat:
+      name: maxLat
+      in: query
+      schema:
+        type: number
+        format: float
+      description: Maximum latitude for bounding box filter
+
+    minLng:
+      name: minLng
+      in: query
+      schema:
+        type: number
+        format: float
+      description: Minimum longitude for bounding box filter
+
+    maxLng:
+      name: maxLng
+      in: query
+      schema:
+        type: number
+        format: float
+      description: Maximum longitude for bounding box filter
+
   requestBodies:
     UserBody:
       required: true
@@ -817,7 +853,7 @@ components:
           type:
             - string
             - "null"
-      required: [firstName, lastName, email]
+      required: [email]
 
     Boat:
       type: object

@@ -9,6 +9,25 @@ services:
     ports:
       - "8000:8000"
     restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  seeder:
+    build: .
+    depends_on:
+      api:
+        condition: service_healthy
+    command: python seed_db.py
+    volumes:
+      - .:/code
+      - ./fisherfans.db:/code/fisherfans.db
+    environment:
+      - DATABASE_URL=sqlite:///fisherfans.db
+      - BASE_URL=http://api:8000/v1
 
   nginx:
     image: nginx:alpine
