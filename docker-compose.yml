@@ -3,9 +3,9 @@ services:
     build: .
     volumes:
       - .:/code
-      - ./fisherfans_v2.db:/code/fisherfans_v2.db
+      - ./fisherfans.db:/code/fisherfans.db
     environment:
-      - DATABASE_URL=sqlite:///fisherfans_v2.db
+      - DATABASE_URL=sqlite:///fisherfans.db
     ports:
       - "8000:8000"
     restart: always

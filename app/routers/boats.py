@@ -32,6 +32,9 @@ def read_boats(
     offset: int = 0,
     limit: int = Query(default=100, le=100),
     userId: Optional[int] = None,
+    brand: Optional[str] = None,
+    boatType: Optional[str] = None,
+    homePort: Optional[str] = None,
     minLat: Optional[float] = None,
     maxLat: Optional[float] = None,
     minLng: Optional[float] = None,
@@ -42,6 +45,12 @@ def read_boats(
     query = select(Boat).offset(offset).limit(limit)
     if userId:
         query = query.where(Boat.ownerId == userId)
+    if brand:
+        query = query.where(Boat.brand == brand)
+    if boatType:
+        query = query.where(Boat.boatType == boatType)
+    if homePort:
+        query = query.where(Boat.homePort == homePort)
 
     bbox_params = [minLat, maxLat, minLng, maxLng]
     if any(param is not None for param in bbox_params):
